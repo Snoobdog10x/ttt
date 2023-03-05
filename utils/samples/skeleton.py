@@ -135,27 +135,23 @@ abstract class AbstractProvider extends ChangeNotifier {
 
 ABSTRACT_SCREEN = """
 import 'dart:async';
-
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:reel_t/shared_product/first_init.dart';
 import 'package:reel_t/shared_product/services/app_store.dart';
 import 'abstract_provider.dart';
 
 abstract class AbstractState<T extends StatefulWidget> extends State<T> {
-  AppStore appStore = AppStore();
+  AppStore appStore = FirstInit.appStore;
   late AbstractProvider _provider;
   late BuildContext _context;
-  ConnectivityResult _previousConnectionStatus = ConnectivityResult.wifi;
-  ConnectivityResult _connectionStatus = ConnectivityResult.wifi;
-  final Connectivity _connectivity = Connectivity();
   late double _topPadding;
   late double _screenHeight;
   late double _screenWidth;
   void onCreate();
   void onDispose();
   void onReady();
+  bool hasDisplayConnected = true;
   AbstractProvider initProvider();
   BuildContext initContext();
   Widget buildScreen({
@@ -164,48 +160,56 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
     Widget? bottomNavBar,
     Widget? body,
     EdgeInsets? padding,
+    Color background = Colors.white,
   }) {
+    List<Widget> child = [];
     List<Widget> layout = [];
-    if (_previousConnectionStatus == ConnectivityResult.wifi &&
-        _connectionStatus == ConnectivityResult.none) {
+    if (!appStore.isConnected()) {
       layout.add(_buildConnectionStatus(false));
+      hasDisplayConnected = false;
     }
 
-    if (_previousConnectionStatus == ConnectivityResult.none &&
-        _connectionStatus == ConnectivityResult.wifi) {
+    if (hasDisplayConnected == false && appStore.isConnected()) {
       layout.add(_buildConnectionStatus(true));
-      Future.delayed(Duration(seconds: 3), () {
-        _updateConnectionStatus(ConnectivityResult.wifi);
+      Future.delayed(Duration(seconds: 2), () {
+        hasDisplayConnected = true;
+        notifyDataChanged();
       });
     }
 
     if (appBar != null) {
-      layout.add(appBar);
+      child.add(appBar);
     }
-    layout.add(body ?? Container());
+    child.add(Expanded(child: body ?? Container()));
+
+    Widget childWidget;
     if (isSafe) {
-      return Scaffold(
-        bottomNavigationBar: bottomNavBar,
-        body: Container(
-          padding: EdgeInsets.only(
-            top: paddingTop(),
-            left: padding?.left ?? 0,
-            right: padding?.right ?? 0,
-            bottom: paddingBottom(),
-          ),
-          child: Column(
-            children: layout,
-          ),
+      childWidget = Container(
+        padding: EdgeInsets.only(
+          top: paddingTop(),
+          left: padding?.left ?? 0,
+          right: padding?.right ?? 0,
+          bottom: paddingBottom(),
+        ),
+        child: Column(
+          children: child,
+        ),
+      );
+    } else {
+      childWidget = Container(
+        padding: padding ?? EdgeInsets.zero,
+        child: Column(
+          children: child,
         ),
       );
     }
+    layout.add(Expanded(child: childWidget));
+
     return Scaffold(
+      backgroundColor: background,
       bottomNavigationBar: bottomNavBar,
-      body: Container(
-        padding: padding ?? EdgeInsets.zero,
-        child: Column(
-          children: layout,
-        ),
+      body: Column(
+        children: layout,
       ),
     );
   }
@@ -227,12 +231,16 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
     _provider = initProvider();
     _provider.state = this;
     _context = initContext();
-    initConnectivity();
-    onReady();
+    appStore.setNotify(notifyDataChanged);
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) async {
+        onReady();
+      },
+    );
   }
 
   void notifyDataChanged() {
-    _provider?.notifyDataChanged();
+    _provider.notifyDataChanged();
   }
 
   double screenHeight() {
@@ -276,26 +284,6 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
   void dispose() {
     super.dispose();
     onDispose();
-  }
-
-  void _updateConnectionStatus(ConnectivityResult result) {
-    _previousConnectionStatus = _connectionStatus;
-    _connectionStatus = result;
-    notifyDataChanged();
-  }
-
-  Future<void> initConnectivity() async {
-    late ConnectivityResult result;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      result = await _connectivity.checkConnectivity();
-      _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
-    } on PlatformException catch (e) {
-      print("connect");
-      return;
-    }
-
-    return _updateConnectionStatus(result);
   }
 
   bool _isLoading = false;
