@@ -24,17 +24,34 @@ def count_code_line():
     print("test")
 
 
+def init_folder():
+    f.create_path("config/models")
+    f.create_path("config/screens")
+    f.create_path("config/events")
+    f.create_path("lib/models")
+    f.create_path("lib/screens")
+    f.create_path("lib/events")
+    f.create_path("lib/screens/abstracts")
+    screens.write_abstract_screen_file("lib/screens/abstracts")
+    pass
+
+
 def main(args):
+    if args.init_source:
+        init_folder()
+        return
     if args.sync:
         ttt_sync()
         return
-    count_code_line()
+    if args.count:
+        count_code_line()
+        return
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('--init', action='store_true',
+    group.add_argument('--init_source', action='store_true',
                        help='init flutter project by provider structure file from config')
     group.add_argument('--sync', action='store_true', help='sync file from config')
     group.add_argument('--count', action='store_true', help='count line code')

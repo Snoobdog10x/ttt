@@ -32,3 +32,10 @@ def write_screen_sample_file(config_file_path):
     output = template.render(NAMING=NAMING, PATH_NAMING=PATH_NAMING)
     f.write_file(OUTPUT_EVENT_FILE_PATH, output)
     print(print(f"compiled {screen_name} screen"))
+
+
+def write_abstract_screen_file(path: str):
+    output_abstract = f'{path}/abstract_state.dart'
+    output_provider = f'{path}/abstract_provider.dart'
+    f.write_file(output_abstract, ske.ABSTRACT_SCREEN)
+    f.write_file(output_provider, ske.ABSTRACT_PROVIDER)
