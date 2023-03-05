@@ -104,13 +104,8 @@ class _{{NAMING}}ScreenState extends AbstractState<{{NAMING}}Screen> {
   }
 
   Widget buildBody() {
-    return Container(
-      alignment: Alignment.center,
-      child: Column(
-        children: [
-
-        ],
-      ),
+    return Column(
+        children: [],
     );
   }
 
@@ -128,8 +123,11 @@ class _{{NAMING}}ScreenState extends AbstractState<{{NAMING}}Screen> {
 
 ABSTRACT_PROVIDER = """
 import 'package:flutter/material.dart';
-abstract class AbstractProvider extends ChangeNotifier{
-  void notifyDataChanged(){
+import 'package:reel_t/screens/abstracts/abstract_state.dart';
+
+abstract class AbstractProvider extends ChangeNotifier {
+  late AbstractState state;
+  void notifyDataChanged() {
     notifyListeners();
   }
 }
@@ -142,9 +140,11 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:reel_t/shared_product/services/app_store.dart';
 import 'abstract_provider.dart';
 
 abstract class AbstractState<T extends StatefulWidget> extends State<T> {
+  AppStore appStore = AppStore();
   late AbstractProvider _provider;
   late BuildContext _context;
   ConnectivityResult _previousConnectionStatus = ConnectivityResult.wifi;
@@ -163,21 +163,22 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
     Widget? appBar,
     Widget? bottomNavBar,
     Widget? body,
+    EdgeInsets? padding,
   }) {
     List<Widget> layout = [];
     if (_previousConnectionStatus == ConnectivityResult.wifi &&
         _connectionStatus == ConnectivityResult.none) {
-      layout.add(buildConnectionStatus(false));
+      layout.add(_buildConnectionStatus(false));
     }
 
     if (_previousConnectionStatus == ConnectivityResult.none &&
         _connectionStatus == ConnectivityResult.wifi) {
-      layout.add(buildConnectionStatus(true));
+      layout.add(_buildConnectionStatus(true));
       Future.delayed(Duration(seconds: 3), () {
         _updateConnectionStatus(ConnectivityResult.wifi);
       });
     }
-    
+
     if (appBar != null) {
       layout.add(appBar);
     }
@@ -186,7 +187,12 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
       return Scaffold(
         bottomNavigationBar: bottomNavBar,
         body: Container(
-          padding: EdgeInsets.only(top: paddingTop(), bottom: paddingBottom()),
+          padding: EdgeInsets.only(
+            top: paddingTop(),
+            left: padding?.left ?? 0,
+            right: padding?.right ?? 0,
+            bottom: paddingBottom(),
+          ),
           child: Column(
             children: layout,
           ),
@@ -196,6 +202,7 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
     return Scaffold(
       bottomNavigationBar: bottomNavBar,
       body: Container(
+        padding: padding ?? EdgeInsets.zero,
         child: Column(
           children: layout,
         ),
@@ -203,7 +210,7 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
     );
   }
 
-  Widget buildConnectionStatus(bool isConnected) {
+  Widget _buildConnectionStatus(bool isConnected) {
     return Container(
       height: 40,
       width: double.infinity,
@@ -218,6 +225,7 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
     super.initState();
     onCreate();
     _provider = initProvider();
+    _provider.state = this;
     _context = initContext();
     initConnectivity();
     onReady();
@@ -297,6 +305,49 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
     _isLoading = false;
   }
 
+  void showAlertDialog({
+    String? title,
+    String? content,
+    Function? confirm,
+    Function? cancel,
+    bool isLockOutsideTap = false,
+  }) {
+    List<CupertinoDialogAction> actions = [];
+    if (confirm != null) {
+      actions.add(
+        CupertinoDialogAction(
+          isDefaultAction: true,
+          onPressed: () {
+            confirm();
+            Navigator.pop(_context);
+          },
+          child: const Text('OK'),
+        ),
+      );
+    }
+
+    if (cancel != null) {
+      actions.add(
+        CupertinoDialogAction(
+          isDefaultAction: true,
+          onPressed: () {
+            cancel();
+            Navigator.pop(_context);
+          },
+          child: const Text('NO'),
+        ),
+      );
+    }
+    showCupertinoModalPopup<void>(
+      context: _context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: Text(title ?? ""),
+        content: Text(content ?? ""),
+        actions: actions,
+      ),
+    );
+  }
+
   void startLoading() {
     if (_isLoading) return;
 
@@ -326,6 +377,10 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
         stopLoading();
       }
     });
+  }
+
+  void popTopDisplay() {
+    Navigator.pop(_context);
   }
 }
 """
