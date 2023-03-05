@@ -23,7 +23,7 @@ def ttt_sync():
 
 
 def count_code_line():
-    exts = ["dart", "py", "html"]
+    exts = ["dart"]
     PWD = os.path.dirname(os.path.realpath(__file__))
     for ext in exts:
         print(ext)
