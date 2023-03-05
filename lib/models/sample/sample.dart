@@ -1,8 +1,8 @@
 
 import 'dart:convert';
 
-enum test_enum { ONE,TWO,THREE }	
-enum enum_two { TEST,B,A }
+enum TestEnum { ONE,TWO,THREE }	
+enum EnumTwo { TEST,B,A }
 
 class Sample {
   String? name;

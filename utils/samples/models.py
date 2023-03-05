@@ -41,8 +41,9 @@ def _enums_to_class_enum(enums: []):
     enums_gen = []
     enum_ske = Template("enum {{ENUM_NAME}} { {{ENUM_TYPES}} }")
     for enum in enums:
-        ENUM_NAME = list(dict(enum).keys())[0]
-        ENUM_TYPES = ",".join([enum_type.upper() for enum_type in enum[ENUM_NAME]])
+        name = list(dict(enum).keys())[0]
+        ENUM_NAME = f.to_camel_case(name)
+        ENUM_TYPES = ",".join([enum_type.upper() for enum_type in enum[name]])
         enum_sample = enum_ske.render(ENUM_NAME=ENUM_NAME, ENUM_TYPES=ENUM_TYPES)
         enums_gen.append(enum_sample)
     return "\t\n".join(enums_gen)

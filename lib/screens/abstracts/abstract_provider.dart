@@ -1,7 +1,10 @@
 
 import 'package:flutter/material.dart';
-abstract class AbstractProvider extends ChangeNotifier{
-  void notifyDataChanged(){
+import 'package:reel_t/screens/abstracts/abstract_state.dart';
+
+abstract class AbstractProvider extends ChangeNotifier {
+  late AbstractState state;
+  void notifyDataChanged() {
     notifyListeners();
   }
 }

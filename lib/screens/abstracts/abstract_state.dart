@@ -1,22 +1,22 @@
 
 import 'dart:async';
-
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:reel_t/shared_product/first_init.dart';
+import 'package:reel_t/shared_product/services/app_store.dart';
 import 'abstract_provider.dart';
 
 abstract class AbstractState<T extends StatefulWidget> extends State<T> {
-  AbstractProvider? _provider;
-  BuildContext? _context;
-  ConnectivityResult _connectionStatus = ConnectivityResult.none;
-  final Connectivity _connectivity = Connectivity();
+  AppStore appStore = FirstInit.appStore;
+  late AbstractProvider _provider;
+  late BuildContext _context;
   late double _topPadding;
   late double _screenHeight;
   late double _screenWidth;
   void onCreate();
   void onDispose();
   void onReady();
+  bool hasDisplayConnected = true;
   AbstractProvider initProvider();
   BuildContext initContext();
   Widget buildScreen({
@@ -24,40 +24,62 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
     Widget? appBar,
     Widget? bottomNavBar,
     Widget? body,
+    EdgeInsets? padding,
+    Color background = Colors.white,
   }) {
+    List<Widget> child = [];
     List<Widget> layout = [];
-    if (_connectionStatus == ConnectivityResult.none) {
-      layout.add(buildConnectionStatus(false));
-    } else {
-      layout.add(buildConnectionStatus(true));
+    if (!appStore.isConnected()) {
+      layout.add(_buildConnectionStatus(false));
+      hasDisplayConnected = false;
+    }
+
+    if (hasDisplayConnected == false && appStore.isConnected()) {
+      layout.add(_buildConnectionStatus(true));
+      Future.delayed(Duration(seconds: 2), () {
+        hasDisplayConnected = true;
+        notifyDataChanged();
+      });
     }
 
     if (appBar != null) {
-      layout.add(appBar);
+      child.add(appBar);
     }
-    layout.add(body ?? Container());
+    child.add(Expanded(child: body ?? Container()));
+
+    Widget childWidget;
     if (isSafe) {
-      return Scaffold(
-        bottomNavigationBar: bottomNavBar,
-        body: Container(
-          padding: EdgeInsets.only(top: paddingTop(), bottom: paddingBottom()),
-          child: Column(
-            children: layout,
-          ),
+      childWidget = Container(
+        padding: EdgeInsets.only(
+          top: paddingTop(),
+          left: padding?.left ?? 0,
+          right: padding?.right ?? 0,
+          bottom: paddingBottom(),
+        ),
+        child: Column(
+          children: child,
+        ),
+      );
+    } else {
+      childWidget = Container(
+        padding: padding ?? EdgeInsets.zero,
+        child: Column(
+          children: child,
         ),
       );
     }
+    layout.add(Expanded(child: childWidget));
+
     return Scaffold(
+      backgroundColor: background,
       bottomNavigationBar: bottomNavBar,
-      body: Container(
-        child: Column(
-          children: layout,
-        ),
+      body: Column(
+        children: layout,
       ),
     );
   }
 
-  Widget buildConnectionStatus(bool isConnected) {
+  Widget _buildConnectionStatus(bool isConnected) {
     return Container(
       height: 40,
       width: double.infinity,
@@ -72,13 +94,18 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
     super.initState();
     onCreate();
     _provider = initProvider();
+    _provider.state = this;
     _context = initContext();
-    initConnectivity();
-    onReady();
+    appStore.setNotify(notifyDataChanged);
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) async {
+        onReady();
+      },
+    );
   }
 
   void notifyDataChanged() {
-    _provider?.notifyDataChanged();
+    _provider.notifyDataChanged();
   }
 
   double screenHeight() {
@@ -121,24 +148,91 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
   @override
   void dispose() {
     super.dispose();
+    onDispose();
   }
 
-  void _updateConnectionStatus(ConnectivityResult result) {
-    _connectionStatus = result;
-    notifyDataChanged();
+  bool _isLoading = false;
+  void stopLoading() {
+    if (!_isLoading) return;
+    Navigator.pop(_context);
+    _isLoading = false;
   }
 
-  Future<void> initConnectivity() async {
-    late ConnectivityResult result;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      result = await _connectivity.checkConnectivity();
-      _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
-    } on PlatformException catch (e) {
-      print("connect");
-      return;
+  void showAlertDialog({
+    String? title,
+    String? content,
+    Function? confirm,
+    Function? cancel,
+    bool isLockOutsideTap = false,
+  }) {
+    List<CupertinoDialogAction> actions = [];
+    if (confirm != null) {
+      actions.add(
+        CupertinoDialogAction(
+          isDefaultAction: true,
+          onPressed: () {
+            confirm();
+            Navigator.pop(_context);
+          },
+          child: const Text('OK'),
+        ),
+      );
     }
 
-    return _updateConnectionStatus(result);
+    if (cancel != null) {
+      actions.add(
+        CupertinoDialogAction(
+          isDefaultAction: true,
+          onPressed: () {
+            cancel();
+            Navigator.pop(_context);
+          },
+          child: const Text('NO'),
+        ),
+      );
+    }
+    showCupertinoModalPopup<void>(
+      context: _context,
+      builder: (BuildContext context) => CupertinoAlertDialog(
+        title: Text(title ?? ""),
+        content: Text(content ?? ""),
+        actions: actions,
+      ),
+    );
+  }
+
+  void startLoading() {
+    if (_isLoading) return;
+
+    AlertDialog alert = AlertDialog(
+      backgroundColor: Colors.transparent,
+      shadowColor: Colors.transparent,
+      content: new Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CupertinoActivityIndicator(
+            radius: 20,
+            color: Colors.grey,
+          ),
+        ],
+      ),
+    );
+    showDialog(
+      barrierDismissible: false,
+      context: _context,
+      builder: (BuildContext context) {
+        return alert;
+      },
+    );
+    _isLoading = true;
+    Future.delayed(Duration(seconds: 10), () {
+      if (_isLoading) {
+        stopLoading();
+      }
+    });
+  }
+
+  void popTopDisplay() {
+    Navigator.pop(_context);
   }
 }
