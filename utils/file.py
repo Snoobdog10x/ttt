@@ -34,10 +34,13 @@ def extract_file_name_from_config_file(path: str):
     return paths[-1].replace(".yaml", "")
 
 
-def to_camel_case(file_name):
+def to_camel_case(file_name: str, capitalize_first_char: bool = True):
     words = file_name.split('_')
     # Capitalize the first letter of each word
-    capitalized_words = [word.capitalize() for word in words]
+    if capitalize_first_char:
+        capitalized_words = [word.capitalize() for word in words]
+    else:
+        capitalized_words = [[words[0]] + [word.capitalize() for word in words[1:]]]
     # Join the capitalized words together
     return ''.join(capitalized_words)
 

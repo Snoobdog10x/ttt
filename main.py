@@ -34,6 +34,8 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--init', action='store_true',
+                       help='init flutter project by provider structure file from config')
     group.add_argument('--sync', action='store_true', help='sync file from config')
     group.add_argument('--count', action='store_true', help='count line code')
     args = parser.parse_args()
