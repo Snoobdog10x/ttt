@@ -3,3 +3,13 @@ arguments:
   - fieldA: double
   - fieldB: int
   - isTest: bool
+
+enums:
+  - test_enum:
+      - one
+      - two
+      - three
+  - enum_two:
+      - test
+      - b
+      - a

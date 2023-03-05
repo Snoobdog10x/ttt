@@ -4,7 +4,7 @@ import yaml
 CONFIG_FILE = "config"
 
 
-def read_config_file(path):
+def _read_config_file(path):
     with open(path, 'r') as stream:
         try:
             data = yaml.safe_load(stream)
@@ -12,6 +12,20 @@ def read_config_file(path):
         except yaml.YAMLError as exc:
             print(exc)
             return {}
+
+
+def get_enums_from_config(path):
+    config = _read_config_file(path)
+    if "enums" not in config or config["enums"] is None:
+        return []
+    return config["enums"]
+
+
+def get_arguments_from_config(path):
+    config = _read_config_file(path)
+    if "arguments" not in config or config["arguments"] is None:
+        return []
+    return config["arguments"]
 
 
 def create_path(path):

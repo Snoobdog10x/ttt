@@ -15,6 +15,8 @@ abstract class {{NAMING}}Event {
 MODELS = """
 import 'dart:convert';
 
+{{ENUMS}}
+
 class {{NAMING}} {
   {{CLASS_FIELD}}
 
