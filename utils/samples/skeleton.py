@@ -258,6 +258,7 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
   @override
   void dispose() {
     super.dispose();
+    onDispose();
   }
 
   void _updateConnectionStatus(ConnectivityResult result) {
