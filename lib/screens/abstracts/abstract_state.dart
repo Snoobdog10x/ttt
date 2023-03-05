@@ -16,6 +16,7 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
   late double _screenWidth;
   void onCreate();
   void onDispose();
+  void onReady();
   AbstractProvider initProvider();
   BuildContext initContext();
   Widget buildScreen({
@@ -73,6 +74,7 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
     _provider = initProvider();
     _context = initContext();
     initConnectivity();
+    onReady();
   }
 
   void notifyDataChanged() {

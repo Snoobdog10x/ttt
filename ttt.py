@@ -4,6 +4,7 @@ import argparse
 
 
 def ttt_sync():
+    screens.write_abstract_screen_file("lib/screens/abstracts")
     configs = f.get_all_config_file()
     for path in configs:
         if "models" in path:

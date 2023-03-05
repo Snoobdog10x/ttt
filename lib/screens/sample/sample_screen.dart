@@ -60,5 +60,12 @@ class _SampleScreenState extends AbstractState<SampleScreen> {
   }
 
   @override
-  void onDispose() {}
+  void onDispose() {
+    
+  }
+  
+  @override
+  void onReady() {
+    // TODO: implement onReady
+  }
 }

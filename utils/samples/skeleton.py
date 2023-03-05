@@ -115,7 +115,14 @@ class _{{NAMING}}ScreenState extends AbstractState<{{NAMING}}Screen> {
   }
 
   @override
-  void onDispose() {}
+  void onDispose() {
+    
+  }
+  
+  @override
+  void onReady() {
+    // TODO: implement onReady
+  }
 }
 """
 
@@ -146,6 +153,7 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
   late double _screenWidth;
   void onCreate();
   void onDispose();
+  void onReady();
   AbstractProvider initProvider();
   BuildContext initContext();
   Widget buildScreen({
@@ -203,6 +211,7 @@ abstract class AbstractState<T extends StatefulWidget> extends State<T> {
     _provider = initProvider();
     _context = initContext();
     initConnectivity();
+    onReady();
   }
 
   void notifyDataChanged() {
