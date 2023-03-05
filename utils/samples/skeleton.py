@@ -142,7 +142,7 @@ import 'package:reel_t/shared_product/services/app_store.dart';
 import 'abstract_provider.dart';
 
 abstract class AbstractState<T extends StatefulWidget> extends State<T> {
-  AppStore appStore = FirstInit.appStore;
+  AppStore appStore = SetUp.firstInit.appStore;
   late AbstractProvider _provider;
   late BuildContext _context;
   late double _topPadding;
