@@ -22,7 +22,7 @@ def _arguments_to_class_field(data: list):
     for argument in data:
         dart_type = list(dict(argument).values())[0]
         field = list(dict(argument).keys())[0]
-        arguments.append(f"{dart_type} {field};")
+        arguments.append(f"late {dart_type} {field};")
     return "\n\t".join(arguments)
 
 
