@@ -12,8 +12,6 @@ def _get_default_data_by_type(dart_type: str, has_equal: bool = True):
     nums = ["DOUBLE", "INT"]
     if dart_type.upper() in nums:
         return f"{prefix}0"
-    if "LIST" in dart_type.upper():
-        return f"{prefix}{'{}'}"
     if dart_type.upper() == "STRING":
         return f'{prefix}""'
     return ""
@@ -24,7 +22,7 @@ def _arguments_to_class_field(data: list):
     for argument in data:
         dart_type = list(dict(argument).values())[0]
         field = list(dict(argument).keys())[0]
-        arguments.append(f"{dart_type}? {field};")
+        arguments.append(f"{dart_type} {field};")
     return "\n\t".join(arguments)
 
 
@@ -33,7 +31,8 @@ def _arguments_to_main_constructor(data: list):
     for argument in data:
         field = list(dict(argument).keys())[0]
         dart_type = list(dict(argument).values())[0]
-        arguments.append(f'this.{field},')
+        default_type_value = _get_default_data_by_type(dart_type)
+        arguments.append(f'this.{field}{default_type_value},')
     return "\n\t\t".join(arguments)
 
 
@@ -55,7 +54,7 @@ def _arguments_to_from_json_constructor(data: list):
         field = list(dict(argument).keys())[0]
         dart_type = list(dict(argument).values())[0]
         default_value = _get_default_data_by_type(dart_type, False)
-        arguments.append(f'{field} = json["' + field + f'"];')
+        arguments.append(f'{field} = json["' + field + f'"] ?? {default_value};')
     return "\n\t\t".join(arguments)
 
 

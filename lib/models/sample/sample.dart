@@ -5,23 +5,23 @@ enum TestEnum { ONE,TWO,THREE }
 enum EnumTwo { TEST,B,A }
 
 class Sample {
-  String? name;
-	double? fieldA;
-	int? fieldB;
-	bool? isTest;
+  String name;
+	double fieldA;
+	int fieldB;
+	bool isTest;
 
   Sample({
-    this.name,
-		this.fieldA,
-		this.fieldB,
-		this.isTest,
+    this.name = "",
+		this.fieldA = 0,
+		this.fieldB = 0,
+		this.isTest = false,
   });
 
   Sample.fromJson(Map<dynamic, dynamic> json) {
-    name = json["name"];
-		fieldA = json["fieldA"];
-		fieldB = json["fieldB"];
-		isTest = json["isTest"];
+    name = json["name"] ?? "";
+		fieldA = json["fieldA"] ?? 0;
+		fieldB = json["fieldB"] ?? 0;
+		isTest = json["isTest"] ?? false;
   }
 
   Sample.fromStringJson(String stringJson) {
