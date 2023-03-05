@@ -1,6 +1,7 @@
 from utils.samples import models, events, screens
 import utils.file as f
 import argparse
+import os
 
 
 def ttt_sync():
@@ -22,7 +23,11 @@ def ttt_sync():
 
 
 def count_code_line():
-    print("test")
+    exts = ["dart", "py", "html"]
+    PWD = os.path.dirname(os.path.realpath(__file__))
+    for ext in exts:
+        print(ext)
+        f.count_lines(PWD, ext=ext)
 
 
 def init_folder():
