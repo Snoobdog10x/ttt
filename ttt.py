@@ -24,7 +24,7 @@ def ttt_sync():
 
 def count_code_line():
     exts = ["dart"]
-    PWD = os.path.dirname(os.path.realpath(__file__))
+    PWD = os.getcwd()
     for ext in exts:
         print(ext)
         f.count_lines(PWD, ext=ext)
