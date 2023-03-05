@@ -1,0 +1,5 @@
+arguments:
+  - name: String
+  - fieldA: double
+  - fieldB: int
+  - isTest: bool
